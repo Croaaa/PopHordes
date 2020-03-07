@@ -3,8 +3,8 @@
 // @description     Aspire les infos IG quand une PopUp s'affiche
 // @match           http*://www.hordes.fr/*
 // @version         1.1
-// @updateURL       https://github.com/thomas-ashcraft/alienware_arena_helper/raw/master/alienwarearena_helper.meta.js
-// @downloadURL     https://github.com/thomas-ashcraft/alienware_arena_helper/raw/master/alienwarearena_helper.user.js
+// @updateURL       https://github.com/Croaaa/PopHordes/blob/master/PopHordes.js
+// @downloadURL     https://github.com/Croaaa/PopHordes/blob/master/PopHordes.js
 // @grant           unsafeWindow
 // ==/UserScript==
 
