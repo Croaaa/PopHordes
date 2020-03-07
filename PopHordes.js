@@ -2,7 +2,7 @@
 // @name            PopHordes
 // @description     Aspire les infos IG quand une PopUp s'affiche
 // @match           http*://www.hordes.fr/*
-// @version         1.1
+// @version         1.2
 // @updateURL       https://github.com/Croaaa/PopHordes/blob/master/PopHordes.js
 // @downloadURL     https://github.com/Croaaa/PopHordes/blob/master/PopHordes.js
 // @grant           unsafeWindow
@@ -135,7 +135,7 @@ async function init() {
             //get popup content:
             getPopupContent()
         ];
-        str= str.concat(imBan(), getStatus(), getItems(), ["","","","","","","","","","","",""]).slice(0,43);
+        str= str.concat(imBan(), getStatus(), getItems(), ["","","","","","","","","","","","TEST"]).slice(0,43);
         console.log(str);
         let localSTR= localStorage.getItem('popHordesCache'),
             dataArray= [];
