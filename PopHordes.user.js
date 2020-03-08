@@ -110,7 +110,7 @@ async function init() {
     let notif = document.getElementById("notification");
     if(notif.classList.contains("showNotif") && !notif.classList.contains("aspired")) {
         notif.classList += " aspired"
-        console.log("[POPHORDES] Aspiration Popup en cours ...");
+        console.log("[POPHORDES] Aspiration Popup en cours ..");
         let str= [
             //get l'identifiant hordes:
             `${new unserializeur(infos).unserialized.realId}`,
