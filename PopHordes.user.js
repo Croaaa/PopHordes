@@ -3,7 +3,7 @@
 // @description     Aspire les infos IG quand une PopUp s'affiche
 // @match           http*://www.hordes.fr/*
 // @icon            http://data.hordes.fr/gfx/icons/item_cards.gif
-// @version         1.2
+// @version         1.3
 // @updateURL       https://github.com/Croaaa/PopHordes/raw/master/PopHordes.user.js
 // @downloadURL     https://github.com/Croaaa/PopHordes/raw/master/PopHordes.user.js
 // @grant           unsafeWindow
@@ -40,36 +40,20 @@ function getPopupContent() {
         text= text.replace(/[ ]{2,}/g, ' ');
     return text.trim();
 }
-const allStatus= [
-    //Rassasié, Désaltéré, Soif, Déshydraté, Ivre
-    "status_hasEaten", "status_hasDrunk", "status_thirst", "status_dehyd", "status_drunk",
-    //Gueule de bois, Clean, Drogué, Dépendant, Goule
-    "status_over", "status_clean", "status_drugged", "status_addict", "small_ghoul",
-    //Blessé, Soigné, Infecté, Immunisé, Fatigué
-    "status_wound", "status_healed", "status_infect", "item_disinfect", "status_tired",
-    //Terrorisé, Campeur Avisé, Vaincre la mort
-    "status_terror", "small_camp", "item_shield_mt"
-];
+const allStatus= ["status_hasEaten", "status_hasDrunk", "status_thirst", "status_dehyd", "status_drunk", "status_over", "status_clean", "status_drugged", "status_addict", "small_ghoul", "status_wound", "status_healed", "status_infect", "item_disinfect", "status_tired", "status_terror", "small_camp", "item_shield_mt"];
+// Rassasié, Désaltéré, Soif, Déshydraté, Ivre, Gueule de bois, Clean, Drogué, Dépendant, Goule, Blessé, Soigné, Infecté, Immunisé, Fatigué, Terrorisé, Campeur Avisé, Vaincre la mort
 function getStatus() {
     let has= [],
-        str= [];
+        status= [];
     document.querySelectorAll('#myStatus > li').forEach(a => {
         has.push(a.firstElementChild.src.split('/').reverse()[0].split('.')[0]);
     });
     for(let a=0;a<allStatus.length;a++) {
-        str.push((has.indexOf(allStatus[a])<0)?"N":"Y");
-    } return str;
+        status.push((has.indexOf(allStatus[a])<0)?"N":"Y");
+    } return status;
 }
-const banItems= [
-    //Réveil Hurleur, Réveil Hurleur off,APAG off, APAG 1 charge, APAG 2 charges
-    'item_reveil.gif', 'item_reveil_off.gif', 'item_photo_off.gif', 'item_photo_1.gif', 'item_photo_2.gif',
-    //APAG 3 charges, Habits sales, Habits normaux, Chien appri, Chien appri droguer
-    'item_photo_3.gif', 'item_basic_suit_dirt.gif', 'item_basic_suit.gif', 'item_tamed_pet.gif', 'item_tamed_pet_drug.gif',
-    //Chien appri mort, Eclaireure on, eclaireur off, fouine, tech
-    'item_tamed_pet_off.gif', 'item_vest_on.gif', 'item_vest_off.gif', 'item_pelle.gif', 'item_keymol.gif',
-    //gardien, mite, habitant, "+"
-    'item_shield.gif', 'item_surv_book.gif', 'small_empty_inv.gif', 'small_more2.gif'
-];
+const banItems= ['item_reveil.gif', 'item_reveil_off.gif', 'item_photo_off.gif', 'item_photo_1.gif', 'item_photo_2.gif', 'item_photo_3.gif', 'item_basic_suit_dirt.gif', 'item_basic_suit.gif', 'item_tamed_pet.gif', 'item_tamed_pet_drug.gif', 'item_tamed_pet_off.gif', 'item_vest_on.gif', 'item_vest_off.gif', 'item_pelle.gif', 'item_keymol.gif', 'item_shield.gif', 'item_surv_book.gif', 'small_empty_inv.gif', 'small_more2.gif'];
+//Réveil Hurleur, Réveil Hurleur off, APAG off, APAG 1 charge, APAG 2 charges, APAG 3 charges, Habits sales, Habits normaux, Chien appri, Chien appri drogué 
 function getItems() {
     let has= [];
     document.querySelectorAll('#myBag > li').forEach(a => {
@@ -111,33 +95,26 @@ async function init() {
     if(notif.classList.contains("showNotif") && !notif.classList.contains("aspired")) {
         notif.classList += " aspired"
         console.log("[POPHORDES] Aspiration Popup en cours ..");
-        let str= [
-            //get l'identifiant hordes:
+        let aspire= [
             `${new unserializeur(infos).unserialized.realId}`,
-            //get le pseudo:
             sel('#tid_openRight .tid_name').textContent.trim(),
-            //get ville name:
             sel('#clock > .name').textContent.trim(),
-            //get date
             dateHour.slice(0,10),
-            //get hour
             dateHour.slice(13,dateHour.length),
-            //get day ig
             sel('#clock > .day').textContent.replace(/[^0-9]/g, ''),
-            //get time ig
             sel('#serverTime').textContent.trim(),
-            //get pa
             sel('.counter').textContent.trim(),
-            //get position x - y
             `${coord.x}`,
             `${coord.y}`,
-            //get position ames:
             getSoul(),
-            //get popup content:
-            getPopupContent()
+            getPopupContent(),
+            (sel('#FlashExplo')?"Y":"N"),
+            imBan(),
+            getStatus(),
+            getItems()
         ];
-        str= str.concat(imBan(), getStatus(), getItems(), ["","","","","","","","","","","",""]).slice(0,43);
-        console.log(str);
+        aspire= aspire.concat(["","","","","","","","","","","",""]).slice(0,44);
+        console.log(aspire);
         let localSTR= localStorage.getItem('popHordesCache'),
             dataArray= [];
         if(localSTR&&localSTR.length>0) {
@@ -145,7 +122,7 @@ async function init() {
                 dataArray.push(JSON.parse(item));
             });
         }
-        dataArray.push(str);
+        dataArray.push(aspire);
         let toTXT= [];
         dataArray.forEach(a=> {
             toTXT.push(JSON.stringify(a));
