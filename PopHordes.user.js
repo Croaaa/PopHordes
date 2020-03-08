@@ -3,8 +3,8 @@
 // @description     Aspire les infos IG quand une PopUp s'affiche
 // @match           http*://www.hordes.fr/*
 // @version         1.2
-// @updateURL       https://github.com/Croaaa/PopHordes/blob/master/PopHordes.js
-// @downloadURL     https://github.com/Croaaa/PopHordes/blob/master/PopHordes.js
+// @updateURL       https://github.com/Croaaa/PopHordes/raw/master/PopHordes.user.js
+// @downloadURL     https://github.com/Croaaa/PopHordes/raw/master/PopHordes.user.js
 // @grant           unsafeWindow
 // ==/UserScript==
 
