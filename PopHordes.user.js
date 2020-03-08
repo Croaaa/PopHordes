@@ -53,7 +53,7 @@ function getStatus() {
     } return status;
 }
 const banItems= ['item_reveil.gif', 'item_reveil_off.gif', 'item_photo_off.gif', 'item_photo_1.gif', 'item_photo_2.gif', 'item_photo_3.gif', 'item_basic_suit_dirt.gif', 'item_basic_suit.gif', 'item_tamed_pet.gif', 'item_tamed_pet_drug.gif', 'item_tamed_pet_off.gif', 'item_vest_on.gif', 'item_vest_off.gif', 'item_pelle.gif', 'item_keymol.gif', 'item_shield.gif', 'item_surv_book.gif', 'small_empty_inv.gif', 'small_more2.gif'];
-//Réveil Hurleur, Réveil Hurleur off, APAG off, APAG 1 charge, APAG 2 charges, APAG 3 charges, Habits sales, Habits normaux, Chien appri, Chien appri drogué 
+//Réveil Hurleur, Réveil Hurleur off, APAG off, APAG 1 charge, APAG 2 charges, APAG 3 charges, Habits sales, Habits normaux, Chien appri, Chien appri drogué
 function getItems() {
     let has= [];
     document.querySelectorAll('#myBag > li').forEach(a => {
@@ -108,12 +108,9 @@ async function init() {
             `${coord.y}`,
             getSoul(),
             getPopupContent(),
-            (sel('#FlashExplo')?"Y":"N"),
-            imBan(),
-            getStatus(),
-            getItems()
+            (sel('#FlashExplo')?"Y":"N")
         ];
-        aspire= aspire.concat(["","","","","","","","","","","",""]).slice(0,44);
+        aspire= aspire.concat(imBan(),getStatus(),getItems(),["","","","","","","","","","","",""]).slice(0,44);
         console.log(aspire);
         let localSTR= localStorage.getItem('popHordesCache'),
             dataArray= [];
