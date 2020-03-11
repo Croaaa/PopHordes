@@ -3,7 +3,7 @@
 // @description     Aspire les infos IG quand une PopUp s'affiche
 // @match           http*://www.hordes.fr/*
 // @icon            http://data.hordes.fr/gfx/icons/item_cards.gif
-// @version         1.6.1
+// @version         1.7
 // @updateURL       https://github.com/Croaaa/PopHordes/raw/master/PopHordes.user.js
 // @downloadURL     https://github.com/Croaaa/PopHordes/raw/master/PopHordes.user.js
 // @grant           unsafeWindow
@@ -37,6 +37,7 @@ function sel(a,b) {
         return c.querySelector(a);
     }
 }
+
 function getPopupContent() {
     if(theLastURLForBack.search('removeFromBag')>0) {
         return "[DEPOT DESERT]";
@@ -49,6 +50,7 @@ function getPopupContent() {
         return text.trim();
     }
 }
+
 const allStatus= ["status_hasEaten", "status_hasDrunk", "status_thirst", "status_dehyd", "status_drunk", "status_over", "status_clean", "status_drugged", "status_addict", "small_ghoul", "status_wound", "status_healed", "status_infect", "item_disinfect", "status_tired", "status_terror", "small_camp", "item_shield_mt"];
 // Rassasié, Désaltéré, Soif, Déshydraté, Ivre, Gueule de bois, Clean, Drogué, Dépendant, Goule, Blessé, Soigné, Infecté, Immunisé, Fatigué, Terrorisé, Campeur Avisé, Vaincre la mort
 function getStatus() {
@@ -61,6 +63,7 @@ function getStatus() {
         status.push((has.indexOf(allStatus[a])<0)?"N":"Y");
     } return status;
 }
+
 const banItems= ['item_reveil.gif', 'item_reveil_off.gif', 'item_photo_off.gif', 'item_photo_1.gif', 'item_photo_2.gif', 'item_photo_3.gif', 'item_basic_suit_dirt.gif', 'item_basic_suit.gif', 'item_tamed_pet.gif', 'item_tamed_pet_drug.gif', 'item_tamed_pet_off.gif', 'item_vest_on.gif', 'item_vest_off.gif', 'item_pelle.gif', 'item_keymol.gif', 'item_shield.gif', 'item_surv_book.gif', 'small_empty_inv.gif', 'small_more2.gif'];
 //Réveil Hurleur, Réveil Hurleur off, APAG off, APAG 1 charge, APAG 2 charges, APAG 3 charges, Habits sales, Habits normaux, Chien appri, Chien appri drogué
 function getItems() {
@@ -73,6 +76,7 @@ function getItems() {
     });
     return has;
 }
+
 function getSoul() {
     let ames= [];
     if(data) {
@@ -90,6 +94,7 @@ function getSoul() {
     while(x.length<39) x.push('');
     return ames.concat(x).slice(0,39).join(',');
 }
+
 function imBan() {
     let a= sel('.revoltStatus'),
         b= sel('[href^="#outside/searchGarbarge"]'),
@@ -97,6 +102,7 @@ function imBan() {
     if(a||b||c) return "Y";
     return "N";
 }
+
 function getCityType() {
     if (sel('div#clock div.day span.hard')) return "PANDE";
     else if (data) {
@@ -105,11 +111,22 @@ function getCityType() {
     }
     else return "RE/RNE";
 }
+
 function getBless() {
     let a= sel('#myStatus img[src$="status_wound.gif"]');
     if(!a) return "N";
     return a.getAttribute('onmouseover').split("'")[1].split(':')[1].trim();
 }
+
+function getRuin() {
+    if(sel('#FlashExplo')) {
+        let r= sel('#FlashExplo').getAttribute('flashvars').slice(13);
+        r= haxe.Unserializer.run(new decode(r, true).serial);
+        return ["BUNKER", "MOTEL", "HOPITAL"][r._k];
+    }
+    else return "N";
+}
+
 async function init() {
     let url= this.urlForBack,
         dateHour= new Date();
@@ -141,7 +158,7 @@ async function init() {
             popupContent: getPopupContent(),
             onBuilding: (sel('.outSpot h2')?sel('.outSpot h2').textContent.trim():"N"),
             driedZone: (sel('.driedZone')?"Y":"N"),
-            inRuin: (sel('#FlashExplo')?"Y":"N"),
+            inRuin: getRuin(),
             imBan: imBan(),
             blessType: getBless(),
             listStatus: getStatus(),
@@ -175,6 +192,7 @@ async function init() {
          }
     }
 }
+
 function initMap() {
     if(!hasINITIALISED&&sel('#FlashMap')) {
         let d= sel('#FlashMap').getAttribute('flashvars').slice(13);
@@ -193,6 +211,7 @@ function initMap() {
     }
     hasINITIALISED= true;
 }
+
 function urlToObj(a) {
     let x= {};
     a.split(';').forEach(a=> {
