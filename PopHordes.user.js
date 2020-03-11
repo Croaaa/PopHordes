@@ -3,7 +3,7 @@
 // @description     Aspire les infos IG quand une PopUp s'affiche
 // @match           http*://www.hordes.fr/*
 // @icon            http://data.hordes.fr/gfx/icons/item_cards.gif
-// @version         1.5
+// @version         1.6
 // @updateURL       https://github.com/Croaaa/PopHordes/raw/master/PopHordes.user.js
 // @downloadURL     https://github.com/Croaaa/PopHordes/raw/master/PopHordes.user.js
 // @grant           unsafeWindow
@@ -13,7 +13,7 @@ var data=false,
     town= {x:0,y:0},
     coord= {x:0,y:0},
     js= unsafeWindow.js,
-    version= 1.5,
+    version= 1.6,
     hasINITIALISED= false,
     theLastURLForBack= false,
     haxe= unsafeWindow.haxe,
