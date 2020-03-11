@@ -3,7 +3,7 @@
 // @description     Aspire les infos IG quand une PopUp s'affiche
 // @match           http*://www.hordes.fr/*
 // @icon            http://data.hordes.fr/gfx/icons/item_cards.gif
-// @version         1.6
+// @version         1.3
 // @updateURL       https://github.com/Croaaa/PopHordes/raw/master/PopHordes.user.js
 // @downloadURL     https://github.com/Croaaa/PopHordes/raw/master/PopHordes.user.js
 // @grant           unsafeWindow
@@ -105,6 +105,11 @@ function getCityType() {
     }
     else return "RE/RNE";
 }
+function getBless() {
+    let a= sel('#myStatus img[src$="status_wound.gif"]');
+    if(!a) return "N";
+    return a.getAttribute('onmouseover').split("'")[1].split(':')[1].trim();
+}
 async function init() {
     let url= this.urlForBack,
         dateHour= new Date();
@@ -138,6 +143,7 @@ async function init() {
             driedZone: (sel('.driedZone')?"Y":"N"),
             inRuin: (sel('#FlashExplo')?"Y":"N"),
             imBan: imBan(),
+            blessType: getBless(),
             listStatus: getStatus(),
             listItem: getItems().concat(["","","","","","","","","","","",""]).slice(0,12),
             scriptVersion: version
