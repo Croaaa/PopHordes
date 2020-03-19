@@ -3,7 +3,7 @@
 // @description     Aspire les infos IG quand une PopUp s'affiche
 // @match           http*://www.hordes.fr/*
 // @icon            http://data.hordes.fr/gfx/icons/item_cards.gif
-// @version         1.7
+// @version         1.8
 // @updateURL       https://github.com/Croaaa/PopHordes/raw/master/PopHordes.user.js
 // @downloadURL     https://github.com/Croaaa/PopHordes/raw/master/PopHordes.user.js
 // @grant           unsafeWindow
@@ -13,7 +13,7 @@ var data=false,
     town= {x:0,y:0},
     coord= {x:0,y:0},
     js= unsafeWindow.js,
-    version= 1.7,
+    version= 1.8,
     hasINITIALISED= false,
     theLastURLForBack= false,
     haxe= unsafeWindow.haxe,
@@ -39,6 +39,7 @@ function sel(a,b) {
 }
 
 function getPopupContent() {
+    if(!theLastURLForBack) theLastURLForBack= "";
     if(theLastURLForBack.search('removeFromBag')>0) {
         return "[DEPOT DESERT]";
     } else if(theLastURLForBack.search('grabItem')>0) {
@@ -75,6 +76,15 @@ function getItems() {
         }
     });
     return has;
+}
+
+function getGround() {
+    let ground= [];
+    document.querySelectorAll('.outInv > li > span > a').forEach(a => {
+        let b= a.firstElementChild.src.split('/').reverse()[0].split('?')[0];
+        ground.push(b);
+    });
+    return ground.join('|');
 }
 
 function getSoul() {
@@ -163,6 +173,7 @@ async function init() {
             blessType: getBless(),
             listStatus: getStatus(),
             listItem: getItems().concat(["","","","","","","","","","","",""]).slice(0,12),
+            groundItem: getGround(),
             scriptVersion: version
         };
 
@@ -189,7 +200,7 @@ async function init() {
         }).then(a=>a.json());
         if(true) {
             localStorage.removeItem('popHordesCache');
-         }
+        }
     }
 }
 
