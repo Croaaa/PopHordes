@@ -10,7 +10,7 @@
 // ==/UserScript==
 
 var data=false,
-    temp=false,
+    next=false,
     version= 1.9,
     dataStatus= "",
     town= {x:0,y:0},
@@ -170,7 +170,7 @@ async function init(when) {
 
     let notif = document.getElementById("notification");
     if(
-        (when=="AFTER" && temp==true)
+        (when=="AFTER" && next==true)
         ||
         ((notif.classList.contains("showNotif") && !notif.classList.contains("aspired"))
          ||
@@ -183,19 +183,21 @@ async function init(when) {
 
         if(notif.classList.contains("showNotif") && !notif.classList.contains("aspired")) {
             notif.classList += " aspired"
-            dataStatus = when;
         }
-        else if ((thelastURLFB.search('removeFromBag')>0 || thelastURLFB.search('grabItem')>0) && (Math.abs(coord.x)+Math.abs(coord.y)!=0)) {
+
+        if ((thelastURLFB.search('removeFromBag')>0 || thelastURLFB.search('grabItem')>0) && (Math.abs(coord.x)+Math.abs(coord.y)!=0)) {
             dataStatus = "BEFORE"
         }
         else if ((oldlastURLFB.search('removeFromBag')>0 || oldlastURLFB.search('grabItem')>0) && (Math.abs(coord.x)+Math.abs(coord.y)!=0)) {
             dataStatus = "AFTER"
         }
+        else {
+            dataStatus = when;
+            if(when=="BEFORE") { next = true }
+            if(when=="AFTER") { next = false }
+        }
 
-        if(when=="BEFORE") { temp = true }
-        if(when=="AFTER") { temp = false }
-
-        console.log("[POPHORDES] Aspiration Popup en cours ..");
+        console.log("[POPHORDES] Aspiration Popup en cours ...");
         let aspire= {
 
             hordesId: `${new unserializeur(infos).unserialized.realId}`,
