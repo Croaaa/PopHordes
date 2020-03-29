@@ -3,19 +3,23 @@
 // @description     Aspire les infos IG quand une PopUp s'affiche
 // @match           http*://www.hordes.fr/*
 // @icon            http://data.hordes.fr/gfx/icons/item_cards.gif
-// @version         1.8
+// @version         1.9
 // @updateURL       https://github.com/Croaaa/PopHordes/raw/master/PopHordes.user.js
 // @downloadURL     https://github.com/Croaaa/PopHordes/raw/master/PopHordes.user.js
 // @grant           unsafeWindow
 // ==/UserScript==
 
 var data=false,
+    temp=false,
+    version= 1.9,
+    dataStatus= "",
     town= {x:0,y:0},
     coord= {x:0,y:0},
-    js= unsafeWindow.js,
-    version= 1.8,
-    hasINITIALISED= false,
-    theLastURLForBack= false,
+    thelastURLFB= "",
+    oldlastURLFB= "",
+    hasInitialised= false;
+
+var js= unsafeWindow.js,
     haxe= unsafeWindow.haxe,
     console= unsafeWindow.console,
     infos= unsafeWindow.__tid.infos,
@@ -24,8 +28,20 @@ var data=false,
     localStorage= unsafeWindow.localStorage,
     decodeURL= t=>decodeURIComponent(t.split("+").join(" "));
 
+
 class decode{constructor(e,t){let n=decodeURIComponent(e.split("+").join(" ")),o=t?ExploCommon.genKey(n.length):MapCommon.genKey(n.length),l=t?ExploCommon.permute(n):MapCommon.permute(n);this.serial=this.binaryToMessage(o,l)}binaryToMessage(e,t){let n=[];for(let t=0,o=e.length;t<o;t++){let o=this.translate(e.charCodeAt(t));null!=o&&n.push(o)}n=n.length<1?[0]:n;let o="";for(let e=0,l=t.length;e<l;e++){let l=t.charCodeAt(e)^n[(e+t.length)%n.length];o+=String.fromCharCode(0!==l?l:t.charCodeAt(e))}return o}translate(e){return e>=65&&e<=90?e-65:e>=97&&e<=122?e-71:e>=48&&e<=57?e+4:null}}
 class unserializeur{constructor(t){this.buffer=t,this.length=t.length,this.cache=[],this.scache=[],this.pos=0,this.unserialized=this.unserialize()}unserialize(){let a=this.buffer[this.pos++],b={i:"this.readDigits()",o:"this.readObject()",y:"this.readString()"};if(b.hasOwnProperty(a))return eval(b[a]);throw`Invalid char "${this.buffer[this.pos-1]}" (${this.buffer.charCodeAt(this.pos-1)}) at position ${this.pos-1}`}readDigits(){let t=0,i="-"===this.buffer[this.pos]&&(this.pos++,!0);for(;;){let i=this.buffer[this.pos];if(["0","1","2","3","4","5","6","7","8","9"].indexOf(i)<0)break;t=10*t+parseInt(i),this.pos++}return i?-1*t:t}readString(){let t=this.readDigits();if(":"!==this.buffer[this.pos++]||this.length-this.pos<t)throw"Invalid string length";{let i=decodeURL(this.buffer.slice(this.pos,this.pos+=t));return this.scache.push(i),i}}readObject(){let t={};for(;;){if(this.pos>=this.length)throw"Invalid object";if("g"===this.buffer[this.pos])break;{let i=this.unserialize();if(["number","string"].indexOf(typeof i)<0)throw"Invalid object key";{let s=this.unserialize();t[i]=s}}}return this.pos++,this.cache.push(t),t}}
+
+
+const allStatus= ["status_hasEaten", "status_hasDrunk", "status_thirst", "status_dehyd", "status_drunk", "status_over", "status_clean", "status_drugged", "status_addict", "small_ghoul", "status_wound", "status_healed", "status_infect", "item_disinfect", "status_tired", "status_terror", "small_camp", "item_shield_mt"];
+// Rassasié, Désaltéré, Soif, Déshydraté, Ivre, Gueule de bois, Clean, Drogué, Dépendant, Goule, Blessé, Soigné, Infecté, Immunisé, Fatigué, Terrorisé, Campeur Avisé, Vaincre la mort.
+
+const banItems= ['item_reveil.gif', 'item_reveil_off.gif', 'item_photo_off.gif', 'item_photo_1.gif', 'item_photo_2.gif', 'item_photo_3.gif', 'item_basic_suit_dirt.gif', 'item_basic_suit.gif', 'small_empty_inv.gif','small_more2.gif'];
+// Réveil Hurleur, Réveil Hurleur off, APAG off, APAG 1 charge, APAG 2 charges, APAG 3 charges, Habits sales, Habits normaux, Slot vide, +.
+
+const heroJobs= ['item_tamed_pet.gif', 'item_tamed_pet_drug.gif', 'item_tamed_pet_off.gif', 'item_vest_on.gif', 'item_vest_off.gif', 'item_pelle.gif', 'item_keymol.gif', 'item_shield.gif', 'item_surv_book.gif'];
+// Chien, Chien drogué, Chien off, Capuche on, Capuche off, Fouineur, Technicien, Gardien, Ermite.
+
 
 function sel(a,b) {
     let c= b||document, d= /^(?:#([\w-]+)|\.([\w-]+))$/.test(a), e= 0;
@@ -38,22 +54,6 @@ function sel(a,b) {
     }
 }
 
-function getPopupContent() {
-    if(!theLastURLForBack) theLastURLForBack= "";
-    if(theLastURLForBack.search('removeFromBag')>0) {
-        return "[DEPOT DESERT]";
-    } else if(theLastURLForBack.search('grabItem')>0) {
-        return "[PRISE DESERT]";
-    } else {
-        let text= sel('#notificationText').textContent;
-        text= text.replace(/[\s]/g, ' ');
-        text= text.replace(/[ ]{2,}/g, ' ');
-        return text.trim();
-    }
-}
-
-const allStatus= ["status_hasEaten", "status_hasDrunk", "status_thirst", "status_dehyd", "status_drunk", "status_over", "status_clean", "status_drugged", "status_addict", "small_ghoul", "status_wound", "status_healed", "status_infect", "item_disinfect", "status_tired", "status_terror", "small_camp", "item_shield_mt"];
-// Rassasié, Désaltéré, Soif, Déshydraté, Ivre, Gueule de bois, Clean, Drogué, Dépendant, Goule, Blessé, Soigné, Infecté, Immunisé, Fatigué, Terrorisé, Campeur Avisé, Vaincre la mort
 function getStatus() {
     let has= [],
         status= [];
@@ -65,22 +65,35 @@ function getStatus() {
     } return status;
 }
 
-const banItems= ['item_reveil.gif', 'item_reveil_off.gif', 'item_photo_off.gif', 'item_photo_1.gif', 'item_photo_2.gif', 'item_photo_3.gif', 'item_basic_suit_dirt.gif', 'item_basic_suit.gif', 'item_tamed_pet.gif', 'item_tamed_pet_drug.gif', 'item_tamed_pet_off.gif', 'item_vest_on.gif', 'item_vest_off.gif', 'item_pelle.gif', 'item_keymol.gif', 'item_shield.gif', 'item_surv_book.gif', 'small_empty_inv.gif', 'small_more2.gif'];
-//Réveil Hurleur, Réveil Hurleur off, APAG off, APAG 1 charge, APAG 2 charges, APAG 3 charges, Habits sales, Habits normaux, Chien appri, Chien appri drogué
-function getItems() {
+function getJobs() {
+    let jobs= 'item_basic_suit.gif';
+    document.querySelectorAll('#myBag > li').forEach(a => {
+        let b= a.firstElementChild.src.split('/').reverse()[0];
+        if(heroJobs.indexOf(b)>0) {
+            jobs= b;
+        }
+    });
+    return jobs;
+}
+
+function getBagItems() {
     let has= [];
     document.querySelectorAll('#myBag > li').forEach(a => {
         let b= a.firstElementChild.src.split('/').reverse()[0];
-        if(banItems.indexOf(b)<0) {
+        if(banItems.indexOf(b)<0 && heroJobs.indexOf(b)<0) {
             has.push(b);
         }
     });
     return has;
 }
 
-function getGround() {
+function getGroundItems() {
     let ground= [];
     document.querySelectorAll('.outInv > li > span > a').forEach(a => {
+        let b= a.firstElementChild.src.split('/').reverse()[0].split('?')[0];
+        ground.push(b);
+    });
+    document.querySelectorAll('.outInv > li > span > span').forEach(a => {
         let b= a.firstElementChild.src.split('/').reverse()[0].split('?')[0];
         ground.push(b);
     });
@@ -105,7 +118,20 @@ function getSoul() {
     return ames.concat(x).slice(0,39).join(',');
 }
 
-function imBan() {
+function getPopupContent() {
+    if(thelastURLFB.search('removeFromBag')>0 || oldlastURLFB.search('removeFromBag')>0) {
+        return "[DEPOT DESERT]";
+    } else if(thelastURLFB.search('grabItem')>0 || oldlastURLFB.search('grabItem')>0) {
+        return "[PRISE DESERT]";
+    } else {
+        let text= sel('#notificationText').textContent;
+        text= text.replace(/[\s]/g, ' ');
+        text= text.replace(/[ ]{2,}/g, ' ');
+        return text.trim();
+    }
+}
+
+function getBan() {
     let a= sel('.revoltStatus'),
         b= sel('[href^="#outside/searchGarbarge"]'),
         c= sel('[href^="#outside/hideTools"]');
@@ -137,24 +163,44 @@ function getRuin() {
     else return "N";
 }
 
-async function init() {
-    let url= this.urlForBack,
-        dateHour= new Date();
+async function init(when) {
+
+    let dateHour= new Date();
     dateHour= `${dateHour.toLocaleString("fr-FR")}.${dateHour.getMilliseconds()}`;
+
     let notif = document.getElementById("notification");
     if(
-        (notif.classList.contains("showNotif") && !notif.classList.contains("aspired"))
-        || (
-            (theLastURLForBack.search('removeFromBag')>0 || theLastURLForBack.search('grabItem')>0)
-            && (Math.abs(coord.x)+Math.abs(coord.y)!=0)
+        (when=="AFTER" && temp==true)
+        ||
+        ((notif.classList.contains("showNotif") && !notif.classList.contains("aspired"))
+         ||
+         ((thelastURLFB.search('removeFromBag')>0 || thelastURLFB.search('grabItem')>0 || oldlastURLFB.search('removeFromBag')>0 || oldlastURLFB.search('grabItem')>0)
+          &&
+          (Math.abs(coord.x)+Math.abs(coord.y)!=0)
+         )
         )
     ) {
-        notif.classList += " aspired"
+
+        if(notif.classList.contains("showNotif") && !notif.classList.contains("aspired")) {
+            notif.classList += " aspired"
+            dataStatus = when;
+        }
+        else if ((thelastURLFB.search('removeFromBag')>0 || thelastURLFB.search('grabItem')>0) && (Math.abs(coord.x)+Math.abs(coord.y)!=0)) {
+            dataStatus = "BEFORE"
+        }
+        else if ((oldlastURLFB.search('removeFromBag')>0 || oldlastURLFB.search('grabItem')>0) && (Math.abs(coord.x)+Math.abs(coord.y)!=0)) {
+            dataStatus = "AFTER"
+        }
+
+        if(when=="BEFORE") { temp = true }
+        if(when=="AFTER") { temp = false }
+
         console.log("[POPHORDES] Aspiration Popup en cours ..");
         let aspire= {
 
             hordesId: `${new unserializeur(infos).unserialized.realId}`,
             pseudo: sel('#tid_openRight .tid_name').textContent.trim(),
+            heroJobs: getJobs(),
             cityName: sel('#clock > .name').textContent.trim(),
             cityType: getCityType(),
             cityDay: sel('#clock > .day').textContent.replace(/[^0-9]/g, ''),
@@ -164,18 +210,23 @@ async function init() {
             ap: sel('.counter').textContent.trim(),
             coordX: `${coord.x}`,
             coordY: `${coord.y}`,
+            humanPts: (sel('#humanPts')?sel('#humanPts').textContent.split(' ')[1]:"0"),
+            zombiePts: (sel('#zombiePts')?sel('#zombiePts').textContent.split(' ')[1]:"0"),
             soulPosition: getSoul(),
             popupContent: getPopupContent(),
             onBuilding: (sel('.outSpot h2')?sel('.outSpot h2').textContent.trim():"N"),
             driedZone: (sel('.driedZone')?"Y":"N"),
             inRuin: getRuin(),
-            imBan: imBan(),
+            imBan: getBan(),
             blessType: getBless(),
             listStatus: getStatus(),
-            listItem: getItems().concat(["","","","","","","","","","","",""]).slice(0,12),
-            groundItem: getGround(),
+            listItem: getBagItems().concat(["","","","","","","","","","","",""]).slice(0,12),
+            groundItem: getGroundItems(),
+            dataStatus: dataStatus,
             scriptVersion: version
         };
+
+        oldlastURLFB = thelastURLFB;
 
         console.log(aspire);
         let localSTR= localStorage.getItem('popHordesCache'),
@@ -205,7 +256,7 @@ async function init() {
 }
 
 function initMap() {
-    if(!hasINITIALISED&&sel('#FlashMap')) {
+    if(!hasInitialised&&sel('#FlashMap')) {
         let d= sel('#FlashMap').getAttribute('flashvars').slice(13);
         d= haxe.Unserializer.run(new decode(d, false).serial);
         data= d;
@@ -220,7 +271,7 @@ function initMap() {
         coord.x= d._x-ville.x;
         coord.y= ville.y-d._y;
     }
-    hasINITIALISED= true;
+    hasInitialised= true;
 }
 
 function urlToObj(a) {
@@ -232,17 +283,22 @@ function urlToObj(a) {
 }
 
 (function() {
-    //init();
+    let notification= sel("#notification");
+    let observer= new MutationObserver(function(a,b) {
+        if(notification.classList.contains('showNotif')) { return false; }
+        else { init("AFTER"); }
+    });
+    observer.observe(notification, { attributes: true });
     js.XmlHttp.pophordesOnEnd= js.XmlHttp.onEnd;
     js.XmlHttp.onEnd= function() {
-        theLastURLForBack= this.urlForBack;
-        if(theLastURLForBack&&theLastURLForBack.startsWith('outside/go?')) {
-            let i= urlToObj(theLastURLForBack.split('?')[1]);
+        thelastURLFB= this.urlForBack;
+        if(thelastURLFB&&thelastURLFB.startsWith('outside/go?')) {
+            let i= urlToObj(thelastURLFB.split('?')[1]);
             coord.x+= parseInt(i.x);
             coord.y-= parseInt(i.y);
         }
         initMap();
-        init();
+        init("BEFORE");
         js.XmlHttp.pophordesOnEnd();
     };
 })();
