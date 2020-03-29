@@ -3,7 +3,7 @@
 // @description     Aspire les infos IG quand une PopUp s'affiche
 // @match           http*://www.hordes.fr/*
 // @icon            http://data.hordes.fr/gfx/icons/item_cards.gif
-// @version         1.9
+// @version         2.1
 // @updateURL       https://github.com/Croaaa/PopHordes/raw/master/PopHordes.user.js
 // @downloadURL     https://github.com/Croaaa/PopHordes/raw/master/PopHordes.user.js
 // @grant           unsafeWindow
@@ -11,7 +11,7 @@
 
 var data=false,
     next=false,
-    version= 1.9,
+    version= 2.1,
     dataStatus= "",
     town= {x:0,y:0},
     coord= {x:0,y:0},
@@ -25,7 +25,6 @@ var js= unsafeWindow.js,
     infos= unsafeWindow.__tid.infos,
     MapCommon= unsafeWindow.MapCommon,
     ExploCommon= unsafeWindow.ExploCommon,
-    localStorage= unsafeWindow.localStorage,
     decodeURL= t=>decodeURIComponent(t.split("+").join(" "));
 
 
@@ -229,31 +228,15 @@ async function init(when) {
         };
 
         oldlastURLFB = thelastURLFB;
-
         console.log(aspire);
-        let localSTR= localStorage.getItem('popHordesCache'),
-            dataArray= [];
-        if(localSTR&&localSTR.length>0) {
-            localSTR.split('\n').forEach(item=> {
-                dataArray.push(JSON.parse(item));
-            });
-        }
-        dataArray.push(aspire);
-        let toTXT= [];
-        dataArray.forEach(a=> {
-            toTXT.push(JSON.stringify(a));
-        });
-        localStorage.setItem('popHordesCache', toTXT.join('\n'));
+
         let reponse= await fetch('https://pophordes.yj.fr/', {
             method: "POST",
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({
-                data: dataArray
+                data: [aspire]
             })
-        }).then(a=>a.json());
-        if(true) {
-            localStorage.removeItem('popHordesCache');
-        }
+        }).then(a=>a.json())
     }
 }
 
