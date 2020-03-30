@@ -3,15 +3,16 @@
 // @description     Aspire les infos IG quand une PopUp s'affiche
 // @match           http*://www.hordes.fr/*
 // @icon            http://data.hordes.fr/gfx/icons/item_cards.gif
-// @version         2.1
+// @version         2.2
 // @updateURL       https://github.com/Croaaa/PopHordes/raw/master/PopHordes.user.js
 // @downloadURL     https://github.com/Croaaa/PopHordes/raw/master/PopHordes.user.js
 // @grant           unsafeWindow
 // ==/UserScript==
 
-var data=false,
+var id="",
+    data=false,
     next=false,
-    version= 2.1,
+    version= 2.2,
     dataStatus= "",
     town= {x:0,y:0},
     coord= {x:0,y:0},
@@ -51,6 +52,15 @@ function sel(a,b) {
     } else {
         return c.querySelector(a);
     }
+}
+
+function makeId(length) {
+   let result = "",
+       characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+   for ( let i = 0; i < length; i++ ) {
+      result += characters.charAt(Math.floor(Math.random() * characters.length));
+   }
+   return result;
 }
 
 function getStatus() {
@@ -196,6 +206,9 @@ async function init(when) {
             if(when=="AFTER") { next = false }
         }
 
+        if (dataStatus=="BEFORE") { var idBefore = makeId(10)}
+        if (dataStatus=="AFTER") { var idAfter = id}
+
         console.log("[POPHORDES] Aspiration Popup en cours ...");
         let aspire= {
 
@@ -223,10 +236,12 @@ async function init(when) {
             listStatus: getStatus(),
             listItem: getBagItems().concat(["","","","","","","","","","","",""]).slice(0,12),
             groundItem: getGroundItems(),
-            dataStatus: dataStatus,
+            keyStatus: (id==""?idBefore:idAfter),
+            descStatus: dataStatus,
             scriptVersion: version
         };
 
+        id = idBefore;
         oldlastURLFB = thelastURLFB;
         console.log(aspire);
 
