@@ -3,16 +3,16 @@
 // @description     Aspire les infos IG quand une PopUp s'affiche
 // @match           http*://www.hordes.fr/*
 // @icon            http://data.hordes.fr/gfx/icons/item_cards.gif
-// @version         2.2
+// @version         2.3
 // @updateURL       https://github.com/Croaaa/PopHordes/raw/master/PopHordes.user.js
 // @downloadURL     https://github.com/Croaaa/PopHordes/raw/master/PopHordes.user.js
 // @grant           unsafeWindow
 // ==/UserScript==
 
-var id="",
+var id=false,
     data=false,
     next=false,
-    version= 2.2,
+    version= 2.3,
     dataStatus= "",
     town= {x:0,y:0},
     coord= {x:0,y:0},
@@ -236,7 +236,7 @@ async function init(when) {
             listStatus: getStatus(),
             listItem: getBagItems().concat(["","","","","","","","","","","",""]).slice(0,12),
             groundItem: getGroundItems(),
-            keyStatus: (id==""?idBefore:idAfter),
+            keyStatus: (id?idAfter:idBefore),
             descStatus: dataStatus,
             scriptVersion: version
         };
