@@ -2,8 +2,8 @@
 // @name            PopHordes
 // @description     Aspire les infos IG quand une PopUp s'affiche
 // @match           http*://www.hordes.fr/*
-// @icon            http://data.hordes.fr/gfx/icons/item_cards.gif
-// @version         3.1
+// @icon            https://myhordes.eu/build/images/pictos/r_gsp.3b617d93.gif
+// @version         3.2
 // @updateURL       https://github.com/Croaaa/PopHordes/raw/master/PopHordes.user.js
 // @downloadURL     https://github.com/Croaaa/PopHordes/raw/master/PopHordes.user.js
 // @grant           unsafeWindow
@@ -12,7 +12,7 @@
 var id=false,
     data=false,
     next=false,
-    version= 2.3,
+    version= 3.2,
     dataStatus= "",
     town= {x:0,y:0},
     coord= {x:0,y:0},
@@ -33,8 +33,8 @@ class decode{constructor(e,t){let n=decodeURIComponent(e.split("+").join(" ")),o
 class unserializeur{constructor(t){this.buffer=t,this.length=t.length,this.cache=[],this.scache=[],this.pos=0,this.unserialized=this.unserialize()}unserialize(){let a=this.buffer[this.pos++],b={i:"this.readDigits()",o:"this.readObject()",y:"this.readString()"};if(b.hasOwnProperty(a))return eval(b[a]);throw`Invalid char "${this.buffer[this.pos-1]}" (${this.buffer.charCodeAt(this.pos-1)}) at position ${this.pos-1}`}readDigits(){let t=0,i="-"===this.buffer[this.pos]&&(this.pos++,!0);for(;;){let i=this.buffer[this.pos];if(["0","1","2","3","4","5","6","7","8","9"].indexOf(i)<0)break;t=10*t+parseInt(i),this.pos++}return i?-1*t:t}readString(){let t=this.readDigits();if(":"!==this.buffer[this.pos++]||this.length-this.pos<t)throw"Invalid string length";{let i=decodeURL(this.buffer.slice(this.pos,this.pos+=t));return this.scache.push(i),i}}readObject(){let t={};for(;;){if(this.pos>=this.length)throw"Invalid object";if("g"===this.buffer[this.pos])break;{let i=this.unserialize();if(["number","string"].indexOf(typeof i)<0)throw"Invalid object key";{let s=this.unserialize();t[i]=s}}}return this.pos++,this.cache.push(t),t}}
 
 
-const allStatus= ["status_hasEaten", "status_hasDrunk", "status_thirst", "status_dehyd", "status_drunk", "status_over", "status_clean", "status_drugged", "status_addict", "small_ghoul", "status_wound", "status_healed", "status_infect", "item_disinfect", "status_tired", "status_terror", "small_camp", "item_shield_mt"];
-// Rassasié, Désaltéré, Soif, Déshydraté, Ivre, Gueule de bois, Clean, Drogué, Dépendant, Goule, Blessé, Soigné, Infecté, Immunisé, Fatigué, Terrorisé, Campeur Avisé, Vaincre la mort.
+const allStatus= ["status_hasEaten", "status_hasDrunk", "status_thirst", "status_dehyd", "status_drunk", "status_over", "status_clean", "status_drugged", "status_addict", "small_ghoul", "status_wound", "status_healed", "status_infect", "item_disinfect", "status_tired", "status_terror", "small_camp", "item_shield_mt", "item_shaman", "item_guide"];
+// Rassasié, Désaltéré, Soif, Déshydraté, Ivre, Gueule de bois, Clean, Drogué, Dépendant, Goule, Blessé, Soigné, Infecté, Immunisé, Fatigué, Terrorisé, Campeur Avisé, Vaincre la mort, Chaman, Guide.
 
 const banItems= ['item_reveil.gif', 'item_reveil_off.gif', 'item_photo_off.gif', 'item_photo_1.gif', 'item_photo_2.gif', 'item_photo_3.gif', 'item_basic_suit_dirt.gif', 'item_basic_suit.gif', 'small_empty_inv.gif','small_more2.gif'];
 // Réveil Hurleur, Réveil Hurleur off, APAG off, APAG 1 charge, APAG 2 charges, APAG 3 charges, Habits sales, Habits normaux, Slot vide, +.
@@ -43,7 +43,7 @@ const heroJobs= ['item_tamed_pet.gif', 'item_tamed_pet_drug.gif', 'item_tamed_pe
 // Chien, Chien drogué, Chien off, Capuche on, Capuche off, Fouineur, Technicien, Gardien, Ermite.
 
 
-function sel(a,b) {
+function sel(a,b) { // No problem with this function, I just use it in the one that causes problems.
     let c= b||document, d= /^(?:#([\w-]+)|\.([\w-]+))$/.test(a), e= 0;
     if(d&&a[0]===".") {
         return c.getElementsByClassName(a.slice(1))[0];
@@ -172,6 +172,25 @@ function getRuin() {
     else return "N";
 }
 
+
+function getSearchedBuilding() {
+    if (sel('.outSpot')) {
+        if (sel('.outSpot h2')) {
+            let outSpot = sel('.outSpot h2').textContent.trim() ;
+            let button = null;
+            document.querySelectorAll('#generic_section .button').forEach(a => {
+                if (a.textContent.includes("Fouiller : ", outSpot)) {
+                    button = a;
+                }
+            })
+            if (button?.className == "button off") return "Y"
+            else return "N";
+        }
+        else return "D";
+    }
+    else return "X";
+}
+
 async function init(when) {
 
     let dateHour= new Date();
@@ -220,7 +239,7 @@ async function init(when) {
             cityDay: sel('#clock > .day').textContent.replace(/[^0-9]/g, ''),
             cityHour: sel('#serverTime').textContent.trim(),
             realDate: dateHour.slice(0,10),
-            realHour: dateHour.slice(13,dateHour.length),
+            realHour: dateHour.slice(12,dateHour.length),
             ap: sel('.counter').textContent.trim(),
             coordX: `${coord.x}`,
             coordY: `${coord.y}`,
@@ -229,6 +248,7 @@ async function init(when) {
             soulPosition: getSoul(),
             popupContent: getPopupContent(),
             onBuilding: (sel('.outSpot h2')?sel('.outSpot h2').textContent.trim():"N"),
+            searchedBuilding: getSearchedBuilding(),
             driedZone: (sel('.driedZone')?"Y":"N"),
             inRuin: getRuin(),
             imBan: getBan(),
@@ -249,11 +269,13 @@ async function init(when) {
             method: "POST",
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({
-                data: [aspire]
+                data: aspire
             })
-        }).then(a=>a.json())
+        }).then(a=>a.text())
     }
 }
+
+
 
 function initMap() {
     if(!hasInitialised&&sel('#FlashMap')) {
