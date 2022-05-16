@@ -3,6 +3,7 @@
 // @description     Aspire les infos IG quand une PopUp s'affiche
 // @match           http*://www.hordes.fr/*
 // @icon            https://myhordes.eu/build/images/pictos/r_gsp.3b617d93.gif
+// @author          Eliam
 // @version         3.3
 // @updateURL       https://github.com/Croaaa/PopHordes/raw/master/PopHordes.user.js
 // @downloadURL     https://github.com/Croaaa/PopHordes/raw/master/PopHordes.user.js
