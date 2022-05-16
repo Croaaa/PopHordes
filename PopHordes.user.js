@@ -3,7 +3,7 @@
 // @description     Aspire les infos IG quand une PopUp s'affiche
 // @match           http*://www.hordes.fr/*
 // @icon            https://myhordes.eu/build/images/pictos/r_gsp.3b617d93.gif
-// @version         3.2
+// @version         3.3
 // @updateURL       https://github.com/Croaaa/PopHordes/raw/master/PopHordes.user.js
 // @downloadURL     https://github.com/Croaaa/PopHordes/raw/master/PopHordes.user.js
 // @grant           unsafeWindow
@@ -12,7 +12,7 @@
 var id=false,
     data=false,
     next=false,
-    version= 3.2,
+    version= 3.3,
     dataStatus= "",
     town= {x:0,y:0},
     coord= {x:0,y:0},
@@ -228,7 +228,7 @@ async function init(when) {
         if (dataStatus=="BEFORE") { var idBefore = makeId(10)}
         if (dataStatus=="AFTER") { var idAfter = id}
 
-        console.log("[POPHORDES] Aspiration Popup en cours ...");
+        if (dataStatus=="BEFORE") {console.log("[POPHORDES] Aspiration Popup en cours ...")}
         let aspire= {
 
             hordesId: `${new unserializeur(infos).unserialized.realId}`,
@@ -265,21 +265,30 @@ async function init(when) {
         oldlastURLFB = thelastURLFB;
         console.log(aspire);
 
-        let reponse= await fetch('https://pophordes.go.yj.fr/', {
+        let reponse= (await fetch('https://pophordes.go.yj.fr/', {
             method: "POST",
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({
                 data: aspire
             })
-        }).then(a=>a.text())
+        }))?.text()
     }
 }
 
 
 
 function initMap() {
+
     if(!hasInitialised&&sel('#FlashMap')) {
-        let d= sel('#FlashMap').getAttribute('flashvars').slice(13);
+
+        var d;
+        var node = document.querySelector("#FlashMap");
+        if (node.nodeName.toUpperCase() === "OBJECT") {
+            d = document.querySelector('#FlashMap param[name="flashvars"]').getAttribute("value").substring(13)
+        } else {
+            d = node.getAttribute("flashvars").substring(13)
+        }
+
         d= haxe.Unserializer.run(new decode(d, false).serial);
         data= d;
         let ville= {x:0,y:0};
