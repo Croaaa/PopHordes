@@ -2,9 +2,11 @@
 // @name            PopHordes
 // @description     Aspire les infos IG quand une PopUp s'affiche
 // @match           http*://www.hordes.fr/*
+// @match           http*://www.die2nite.com/*
+// @match           http*://www.zombinoia.com/*
+// @match           http*://www.dieverdammten.de/*
 // @icon            https://myhordes.eu/build/images/pictos/r_gsp.3b617d93.gif
-// @author          Eliam
-// @version         3.3
+// @version         3.4
 // @updateURL       https://github.com/Croaaa/PopHordes/raw/master/PopHordes.user.js
 // @downloadURL     https://github.com/Croaaa/PopHordes/raw/master/PopHordes.user.js
 // @grant           unsafeWindow
@@ -13,7 +15,7 @@
 var id=false,
     data=false,
     next=false,
-    version= 3.3,
+    version= 3.4,
     dataStatus= "",
     town= {x:0,y:0},
     coord= {x:0,y:0},
@@ -53,6 +55,18 @@ function sel(a,b) { // No problem with this function, I just use it in the one t
     } else {
         return c.querySelector(a);
     }
+}
+
+function addNewEl(type, parent, id, content, attrs) {
+	if (['svg', 'path', 'rect', 'text'].indexOf(type) != -1)
+		{ var el = document.createElementNS('http://www.w3.org/2000/svg', type); }
+	else
+		{ var el = document.createElement(type); }
+	if (id) { el.id = id; }
+	if (content) { el.innerHTML = content; }
+	if (attrs) { for (i in attrs) { el.setAttribute(i, attrs[i]); } }
+	if (parent) { parent.appendChild(el); }
+	return el;
 }
 
 function makeId(length) {
@@ -114,12 +128,14 @@ function getSoul() {
     let ames= [];
     if(data) {
         for(let a=0;a<data._details.length;a++) {
-            if(data._details[a]._s) {
-                let x= a%data._w,
-                    y= (a-x)/data._h;
-                x= x-town.x;
-                y= town.y-y;
-                ames.push(`[${x}/${y}]`);
+            if (data._details[a] != null || data._details[a] != undefined) {
+                if(data._details[a]._s) {
+                    let x= a%data._w,
+                        y= (a-x)/data._h;
+                    x= x-town.x;
+                    y= town.y-y;
+                    ames.push(`[${x}/${y}]`);
+                }
             }
         }
     }
@@ -180,7 +196,12 @@ function getSearchedBuilding() {
             let outSpot = sel('.outSpot h2').textContent.trim() ;
             let button = null;
             document.querySelectorAll('#generic_section .button').forEach(a => {
-                if (a.textContent.includes("Fouiller : ", outSpot)) {
+                if (
+                       a.textContent.includes("Fouiller : ", outSpot) // FR
+                    || a.textContent.includes("Explore: ", outSpot) // EN
+                    || a.textContent.includes("erforschen ", outSpot) // DE
+                    || a.textContent.includes("Hurgar: ", outSpot) // ES
+                ) {
                     button = a;
                 }
             })
@@ -229,11 +250,13 @@ async function init(when) {
         if (dataStatus=="BEFORE") { var idBefore = makeId(10)}
         if (dataStatus=="AFTER") { var idAfter = id}
 
+        if (localStorage.getItem('anonymisedData') == "checked") {var anonymisation = "Y"};
+
         if (dataStatus=="BEFORE") {console.log("[POPHORDES] Aspiration Popup en cours ...")}
         let aspire= {
 
-            hordesId: `${new unserializeur(infos).unserialized.realId}`,
-            pseudo: sel('#tid_openRight .tid_name').textContent.trim(),
+            hordesId: (anonymisation?"XXX":`${new unserializeur(infos).unserialized.realId}`),
+            pseudo: (anonymisation?"XXX":sel('#tid_openRight .tid_name').textContent.trim()),
             heroJobs: getJobs(),
             cityName: sel('#clock > .name').textContent.trim(),
             cityType: getCityType(),
@@ -259,7 +282,8 @@ async function init(when) {
             groundItem: getGroundItems(),
             keyStatus: (id?idAfter:idBefore),
             descStatus: dataStatus,
-            scriptVersion: version
+            scriptVersion: version,
+            gameVersion: window.location.host
         };
 
         id = idBefore;
@@ -276,6 +300,53 @@ async function init(when) {
     }
 }
 
+function getParentNode(NodeName, target) {
+    let CurrentNode = target;
+    do {
+        if(CurrentNode.nodeName === NodeName) {
+            return CurrentNode;
+        }
+        CurrentNode = CurrentNode.parentNode;
+    } while(CurrentNode);
+    return false;
+}
+
+function anonymised(event) {
+    var form = getParentNode("FORM", event.target);
+    if(form) {
+        var data = new FormData(form);
+            data = Object.fromEntries(data.entries());
+        var isChecked = data.anonymisedData ? "checked" : "";
+        localStorage.setItem('anonymisedData', isChecked );
+    } else {
+        console.log("Unknown node");
+    }
+}
+
+
+function popOptions() {
+
+    var ghostpage = sel('#ghost_pages');
+    if (ghostpage && sel('.options', ghostpage))
+    {
+
+        if (localStorage.getItem('anonymisedData') == null) {localStorage.setItem('anonymisedData', 'checked') }
+        var isChecked = localStorage.getItem('anonymisedData');
+
+        sel('.misc').insertBefore(addNewEl('div', null, null, null, { class: 'row ph1' }), sel('.misc input+ .row'));
+        sel('.ph1').insertBefore(addNewEl('label', null, null, "Anonymiser les données PopHordes"), sel('ph1'));
+        if (isChecked=="checked") {
+            sel('.ph1').insertBefore(addNewEl('input', null, null, null, { type: 'checkbox', name: 'anonymisedData', id: 'anonymisedData', value: '1', tabindex: '1', checked:"checked"}), sel('ph1'));
+        } else {
+            sel('.ph1').insertBefore(addNewEl('input', null, null, null, { type: 'checkbox', name: 'anonymisedData', id: 'anonymisedData', value: '1', tabindex: '1'}), sel('ph1'));
+        }
+        sel('.ph1').insertBefore(addNewEl('a', null, null, null, {href: '#', onclick: 'return false;', onmouseover: "js.HordeTip.showHelp(this,'<p>Cette option permet de supprimer les données personnelles récoltées par PopHordes</p><p><em> (ID et pseudo notamment).</em></p>')", onmouseout: 'js.HordeTip.hide()', class: 'helpLink ph2' }), sel('ph2'));
+        sel('.ph2').insertBefore(addNewEl('img', null, null, null, { src: 'http://data.hordes.fr/gfx/loc/fr/helpLink.gif', alt: ''}), sel('ph2'));
+
+        var popForm = sel('#anonymisedData');
+        popForm.addEventListener('change', anonymised)
+    }
+};
 
 
 function initMap() {
@@ -294,7 +365,7 @@ function initMap() {
         data= d;
         let ville= {x:0,y:0};
         for(let i=0;i<d._details.length;i++) {
-            if(d._details[i]._c!==1) continue;
+            if(d._details[i] == undefined || d._details[i] == null || d._details[i]._c!==1) continue;
             ville.x= i%d._w;
             ville.y= (i-ville.x)/d._h;
             break;
@@ -329,6 +400,7 @@ function urlToObj(a) {
             coord.x+= parseInt(i.x);
             coord.y-= parseInt(i.y);
         }
+        popOptions();
         initMap();
         init("BEFORE");
         js.XmlHttp.pophordesOnEnd();
