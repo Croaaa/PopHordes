@@ -327,19 +327,22 @@ function anonymised(event) {
 function popOptions() {
 
     var ghostpage = sel('#ghost_pages');
-    if (ghostpage && sel('.options', ghostpage))
-    {
+    if (ghostpage && sel('.options', ghostpage)) {
 
-        if (localStorage.getItem('anonymisedData') == null) {localStorage.setItem('anonymisedData', '') }
+        if (localStorage.getItem('anonymisedData') == null) {
+            localStorage.setItem('anonymisedData', 'checked')
+        }
+
         var isChecked = localStorage.getItem('anonymisedData');
 
         sel('.misc').insertBefore(addNewEl('div', null, null, null, { class: 'row ph1' }), sel('.misc input+ .row'));
         sel('.ph1').insertBefore(addNewEl('label', null, null, "Anonymiser les données PopHordes"), sel('ph1'));
-        if (isChecked=="checked") {
-            sel('.ph1').insertBefore(addNewEl('input', null, null, null, { type: 'checkbox', name: 'anonymisedData', id: 'anonymisedData', value: '1', tabindex: '1', checked:"checked"}), sel('ph1'));
-        } else {
-            sel('.ph1').insertBefore(addNewEl('input', null, null, null, { type: 'checkbox', name: 'anonymisedData', id: 'anonymisedData', value: '1', tabindex: '1'}), sel('ph1'));
+
+        var checkboxOptions = { type: 'checkbox', name: 'anonymisedData', id: 'anonymisedData', value: '1', tabindex: '1' };
+        if (isChecked == "checked") {
+            checkboxOptions.checked = "checked";
         }
+        sel('.ph1').insertBefore(addNewEl('input', null, null, null, checkboxOptions), sel('ph1'));
         sel('.ph1').insertBefore(addNewEl('a', null, null, null, {href: '#', onclick: 'return false;', onmouseover: "js.HordeTip.showHelp(this,'<p>Cette option permet de supprimer les données personnelles récoltées par PopHordes</p><p><em> (ID et pseudo notamment).</em></p>')", onmouseout: 'js.HordeTip.hide()', class: 'helpLink ph2' }), sel('ph2'));
         sel('.ph2').insertBefore(addNewEl('img', null, null, null, { src: 'http://data.hordes.fr/gfx/loc/fr/helpLink.gif', alt: ''}), sel('ph2'));
 
