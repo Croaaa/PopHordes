@@ -250,11 +250,13 @@ async function init(when) {
         if (dataStatus=="BEFORE") { var idBefore = makeId(10)}
         if (dataStatus=="AFTER") { var idAfter = id}
 
+        if (localStorage.getItem('anonymisedData') == "checked") {var anonymisation = "Y"};
+
         if (dataStatus=="BEFORE") {console.log("[POPHORDES] Aspiration Popup en cours ...")}
         let aspire= {
 
-            hordesId: `${new unserializeur(infos).unserialized.realId}`,
-            pseudo: sel('#tid_openRight .tid_name').textContent.trim(),
+            hordesId: (anonymisation?"XXX":`${new unserializeur(infos).unserialized.realId}`),
+            pseudo: (anonymisation?"XXX":sel('#tid_openRight .tid_name').textContent.trim()),
             heroJobs: getJobs(),
             cityName: sel('#clock > .name').textContent.trim(),
             cityType: getCityType(),
@@ -298,21 +300,53 @@ async function init(when) {
     }
 }
 
+function getParentNode(NodeName, target) {
+    let CurrentNode = target;
+    do {
+        if(CurrentNode.nodeName === NodeName) {
+            return CurrentNode;
+        }
+        CurrentNode = CurrentNode.parentNode;
+    } while(CurrentNode);
+    return false;
+}
+
+function anonymised(event) {
+    var form = getParentNode("FORM", event.target);
+    if(form) {
+        var data = new FormData(form);
+            data = Object.fromEntries(data.entries());
+        var isChecked = data.anonymisedData ? "checked" : "";
+        localStorage.setItem('anonymisedData', isChecked );
+    } else {
+        console.log("Unknown node");
+    }
+}
+
 
 function popOptions() {
 
     var ghostpage = sel('#ghost_pages');
     if (ghostpage && sel('.options', ghostpage))
     {
-        var isChecked = localStorage.getItem('anonymisedData') || "checked";
+
+        if (localStorage.getItem('anonymisedData') == null) {localStorage.setItem('anonymisedData', 'checked') }
+        var isChecked = localStorage.getItem('anonymisedData');
+
         sel('.misc').insertBefore(addNewEl('div', null, null, null, { class: 'row ph1' }), sel('.misc input+ .row'));
         sel('.ph1').insertBefore(addNewEl('label', null, null, "Anonymiser les données PopHordes"), sel('ph1'));
-        sel('.ph1').insertBefore(addNewEl('input', null, null, null, { type: 'checkbox', name: 'anonymisedData', id: 'anonymisedData', value: '1', tabindex: '1', checked: isChecked}), sel('ph1'));
+        if (isChecked=="checked") {
+            sel('.ph1').insertBefore(addNewEl('input', null, null, null, { type: 'checkbox', name: 'anonymisedData', id: 'anonymisedData', value: '1', tabindex: '1', checked:"checked"}), sel('ph1'));
+        } else {
+            sel('.ph1').insertBefore(addNewEl('input', null, null, null, { type: 'checkbox', name: 'anonymisedData', id: 'anonymisedData', value: '1', tabindex: '1'}), sel('ph1'));
+        }
         sel('.ph1').insertBefore(addNewEl('a', null, null, null, {href: '#', onclick: 'return false;', onmouseover: "js.HordeTip.showHelp(this,'<p>Cette option permet de supprimer les données personnelles récoltées par PopHordes</p><p><em> (ID et pseudo notamment).</em></p>')", onmouseout: 'js.HordeTip.hide()', class: 'helpLink ph2' }), sel('ph2'));
         sel('.ph2').insertBefore(addNewEl('img', null, null, null, { src: 'http://data.hordes.fr/gfx/loc/fr/helpLink.gif', alt: ''}), sel('ph2'));
+
+        var popForm = sel('#anonymisedData');
+        popForm.addEventListener('change', anonymised)
     }
 };
-
 
 
 function initMap() {
