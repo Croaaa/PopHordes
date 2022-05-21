@@ -330,7 +330,7 @@ function popOptions() {
     if (ghostpage && sel('.options', ghostpage))
     {
 
-        if (localStorage.getItem('anonymisedData') == null) {localStorage.setItem('anonymisedData', 'checked') }
+        if (localStorage.getItem('anonymisedData') == null) {localStorage.setItem('anonymisedData', '') }
         var isChecked = localStorage.getItem('anonymisedData');
 
         sel('.misc').insertBefore(addNewEl('div', null, null, null, { class: 'row ph1' }), sel('.misc input+ .row'));
