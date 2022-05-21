@@ -2,8 +2,11 @@
 // @name            PopHordes
 // @description     Aspire les infos IG quand une PopUp s'affiche
 // @match           http*://www.hordes.fr/*
+// @match           http*://www.die2nite.com/*
+// @match           http*://www.zombinoia.com/*
+// @match           http*://www.dieverdammten.de/*
 // @icon            https://myhordes.eu/build/images/pictos/r_gsp.3b617d93.gif
-// @version         3.3
+// @version         3.4
 // @updateURL       https://github.com/Croaaa/PopHordes/raw/master/PopHordes.user.js
 // @downloadURL     https://github.com/Croaaa/PopHordes/raw/master/PopHordes.user.js
 // @grant           unsafeWindow
@@ -12,7 +15,7 @@
 var id=false,
     data=false,
     next=false,
-    version= 3.3,
+    version= 3.4,
     dataStatus= "",
     town= {x:0,y:0},
     coord= {x:0,y:0},
@@ -125,12 +128,14 @@ function getSoul() {
     let ames= [];
     if(data) {
         for(let a=0;a<data._details.length;a++) {
-            if(data._details[a]._s) {
-                let x= a%data._w,
-                    y= (a-x)/data._h;
-                x= x-town.x;
-                y= town.y-y;
-                ames.push(`[${x}/${y}]`);
+            if (data._details[a] != null || data._details[a] != undefined) {
+                if(data._details[a]._s) {
+                    let x= a%data._w,
+                        y= (a-x)/data._h;
+                    x= x-town.x;
+                    y= town.y-y;
+                    ames.push(`[${x}/${y}]`);
+                }
             }
         }
     }
@@ -191,7 +196,12 @@ function getSearchedBuilding() {
             let outSpot = sel('.outSpot h2').textContent.trim() ;
             let button = null;
             document.querySelectorAll('#generic_section .button').forEach(a => {
-                if (a.textContent.includes("Fouiller : ", outSpot)) {
+                if (
+                       a.textContent.includes("Fouiller : ", outSpot) // FR
+                    || a.textContent.includes("Explore: ", outSpot) // EN
+                    || a.textContent.includes("erforschen ", outSpot) // DE
+                    || a.textContent.includes("Hurgar: ", outSpot) // ES
+                ) {
                     button = a;
                 }
             })
@@ -270,7 +280,8 @@ async function init(when) {
             groundItem: getGroundItems(),
             keyStatus: (id?idAfter:idBefore),
             descStatus: dataStatus,
-            scriptVersion: version
+            scriptVersion: version,
+            gameVersion: window.location.host
         };
 
         id = idBefore;
@@ -287,36 +298,18 @@ async function init(when) {
     }
 }
 
+
 function popOptions() {
 
     var ghostpage = sel('#ghost_pages');
-    if (ghostpage && sel('.options', ghostpage)) {
-        var opt = sel('.options:not(.PH-scripted)', ghostpage)
-
-        var lastForm = sel('.form misc', opt);
-        opt.className += ' PH-scripted';
-        opt.insertBefore(addNewEl('h2', null, null, "PopHordes"), lastForm);
-        opt.insertBefore(addNewEl('form', null, null, null, { class: 'form ph1' }), lastForm);
-
-        var formPh = sel('ph1');
-        var mef = sel('.ph1:not(.PH-scripted)', formPh)
-        mef.className += ' PH-scripted';
-        mef.insertBefore(addNewEl('div', null, null, null, { class: 'row ph2' }), formPh);
-        mef.insertBefore(addNewEl('input', null, null, null, { class: 'button', type: 'submit', name: 'submit', value: 'Enregistrer ces options', tabindex: '1'}), formPh);
-
-        var rowPh = sel('ph2');
-        var lbl = sel('.ph2:not(.PH-scripted)', rowPh)
-        lbl.className += ' PH-scripted';
-        lbl.insertBefore(addNewEl('label', null, null, "Anonymiser les informations personnelles"), rowPh);
-        lbl.insertBefore(addNewEl('input', null, null, null, { type: 'checkbox', name: 'anonymisedData', id: 'anonymisedData', value: '1', tabindex: '1', checked: "checked"}), rowPh);
-        lbl.insertBefore(addNewEl('a', null, null, null, {href: '#', onclick: 'return false;', onmouseover: "js.HordeTip.showHelp(this,'<p>Cette option permet de supprimer les données personnelles récoltées par PopHordes</p><p><em> (ID et pseudo notamment).</em></p>')", onmouseout: 'js.HordeTip.hide()', class: 'helpLink ph3' }), rowPh);
-
-        var aPh = sel('ph3');
-        var img = sel('.ph3:not(.PH-scripted)', aPh)
-        img.className += ' PH-scripted';
-        img.insertBefore(addNewEl('img', null, null, null, { src: 'http://data.hordes.fr/gfx/loc/fr/helpLink.gif', alt: ''}), aPh);
-
-        mef.className = 'form misc';
+    if (ghostpage && sel('.options', ghostpage))
+    {
+        var isChecked = localStorage.getItem('anonymisedData') || "checked";
+        sel('.misc').insertBefore(addNewEl('div', null, null, null, { class: 'row ph1' }), sel('.misc input+ .row'));
+        sel('.ph1').insertBefore(addNewEl('label', null, null, "Anonymiser les données PopHordes"), sel('ph1'));
+        sel('.ph1').insertBefore(addNewEl('input', null, null, null, { type: 'checkbox', name: 'anonymisedData', id: 'anonymisedData', value: '1', tabindex: '1', checked: isChecked}), sel('ph1'));
+        sel('.ph1').insertBefore(addNewEl('a', null, null, null, {href: '#', onclick: 'return false;', onmouseover: "js.HordeTip.showHelp(this,'<p>Cette option permet de supprimer les données personnelles récoltées par PopHordes</p><p><em> (ID et pseudo notamment).</em></p>')", onmouseout: 'js.HordeTip.hide()', class: 'helpLink ph2' }), sel('ph2'));
+        sel('.ph2').insertBefore(addNewEl('img', null, null, null, { src: 'http://data.hordes.fr/gfx/loc/fr/helpLink.gif', alt: ''}), sel('ph2'));
     }
 };
 
@@ -338,7 +331,7 @@ function initMap() {
         data= d;
         let ville= {x:0,y:0};
         for(let i=0;i<d._details.length;i++) {
-            if(d._details[i]._c!==1) continue;
+            if(d._details[i] == undefined || d._details[i] == null || d._details[i]._c!==1) continue;
             ville.x= i%d._w;
             ville.y= (i-ville.x)/d._h;
             break;
