@@ -258,7 +258,7 @@ async function init(when) {
             hordesId: (anonymisation?"XXX":`${new unserializeur(infos).unserialized.realId}`),
             pseudo: (anonymisation?"XXX":sel('#tid_openRight .tid_name').textContent.trim()),
             heroJobs: getJobs(),
-            cityName: sel('#clock > .name').textContent.trim(),
+            cityName: (anonymisation?"XXX":sel('#clock > .name').textContent.trim()),
             cityType: getCityType(),
             cityDay: sel('#clock > .day').textContent.replace(/[^0-9]/g, ''),
             cityHour: sel('#serverTime').textContent.trim(),
@@ -343,7 +343,7 @@ function popOptions() {
             checkboxOptions.checked = "checked";
         }
         sel('.ph1').insertBefore(addNewEl('input', null, null, null, checkboxOptions), sel('ph1'));
-        sel('.ph1').insertBefore(addNewEl('a', null, null, null, {href: '#', onclick: 'return false;', onmouseover: "js.HordeTip.showHelp(this,'<p>Cette option permet de supprimer les données personnelles récoltées par PopHordes</p><p><em> (ID et pseudo notamment).</em></p>')", onmouseout: 'js.HordeTip.hide()', class: 'helpLink ph2' }), sel('ph2'));
+        sel('.ph1').insertBefore(addNewEl('a', null, null, null, {href: '#', onclick: 'return false;', onmouseover: "js.HordeTip.showHelp(this,'<p>Cette option permet de supprimer les données personnelles récoltées par PopHordes</p><p><em> (ID, pseudo et ville).</em></p>')", onmouseout: 'js.HordeTip.hide()', class: 'helpLink ph2' }), sel('ph2'));
         sel('.ph2').insertBefore(addNewEl('img', null, null, null, { src: 'http://data.hordes.fr/gfx/loc/fr/helpLink.gif', alt: ''}), sel('ph2'));
 
         var popForm = sel('#anonymisedData');
