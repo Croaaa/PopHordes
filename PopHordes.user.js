@@ -6,7 +6,7 @@
 // @match           http*://www.zombinoia.com/*
 // @match           http*://www.dieverdammten.de/*
 // @icon            https://myhordes.eu/build/images/pictos/r_gsp.3b617d93.gif
-// @version         3.4
+// @version         3.5
 // @updateURL       https://github.com/Croaaa/PopHordes/raw/master/PopHordes.user.js
 // @downloadURL     https://github.com/Croaaa/PopHordes/raw/master/PopHordes.user.js
 // @grant           unsafeWindow
@@ -15,7 +15,7 @@
 var id=false,
     data=false,
     next=false,
-    version= 3.4,
+    version= 3.5,
     dataStatus= "",
     town= {x:0,y:0},
     coord= {x:0,y:0},
@@ -104,6 +104,9 @@ function getBagItems() {
     let has= [];
     document.querySelectorAll('#myBag > li').forEach(a => {
         let b= a.firstElementChild.src.split('/').reverse()[0];
+        if(a.firstElementChild.className.includes('limited')) {
+            b= b.replace('.gif', '_broken.gif')
+        }
         if(banItems.indexOf(b)<0 && heroJobs.indexOf(b)<0) {
             has.push(b);
         }
@@ -113,13 +116,24 @@ function getBagItems() {
 
 function getGroundItems() {
     let ground= [];
-    document.querySelectorAll('.outInv > li > span > a').forEach(a => {
-        let b= a.firstElementChild.src.split('/').reverse()[0].split('?')[0];
-        ground.push(b);
-    });
-    document.querySelectorAll('.outInv > li > span > span').forEach(a => {
-        let b= a.firstElementChild.src.split('/').reverse()[0].split('?')[0];
-        ground.push(b);
+    let outInv= document.querySelectorAll('.outInv > li > span');
+
+    outInv.forEach(a => {
+        if (sel('a', a))
+        {
+            let b= sel('a', a).firstElementChild.src.split('/').reverse()[0].split('?')[0];
+            if(a.className.includes('limited')) { b= b.replace('.gif', '_broken.gif') }
+            ground.push(b);
+        }
+    })
+
+    outInv.forEach(a => {
+        if (sel('span', a))
+        {
+            let b= sel('span', a).firstElementChild.src.split('/').reverse()[0].split('?')[0];
+            if(a.className.includes('limited')) { b= b.replace('.gif', '_broken.gif') }
+            ground.push(b);
+        }
     });
     return ground.join('|');
 }
