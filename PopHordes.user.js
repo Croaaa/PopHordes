@@ -1,10 +1,10 @@
 // ==UserScript==
 // @name            PopHordes
 // @description     Aspire les infos IG quand une PopUp s'affiche
-// @match           http*://www.hordes.fr/*
-// @match           http*://www.die2nite.com/*
-// @match           http*://www.zombinoia.com/*
-// @match           http*://www.dieverdammten.de/*
+// @match           http://www.hordes.fr/*
+// @match           http://www.die2nite.com/*
+// @match           http://www.zombinoia.com/*
+// @match           http://www.dieverdammten.de/*
 // @icon            https://myhordes.eu/build/images/pictos/r_gsp.3b617d93.gif
 // @version         3.5
 // @updateURL       https://github.com/Croaaa/PopHordes/raw/master/PopHordes.user.js
