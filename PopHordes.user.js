@@ -368,7 +368,8 @@ function popOptions() {
 
 function initMap() {
 
-    if(!hasInitialised&&sel('#FlashMap')) {
+	//if(!hasInitialised&&sel('#FlashMap')) {
+	if(sel('#FlashMap')) {
 
         var d;
         var node = document.querySelector("#FlashMap");
@@ -391,7 +392,7 @@ function initMap() {
         coord.x= d._x-ville.x;
         coord.y= ville.y-d._y;
     }
-    hasInitialised= true;
+    //hasInitialised= true;
 }
 
 function urlToObj(a) {
