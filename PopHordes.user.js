@@ -1,10 +1,10 @@
 // ==UserScript==
 // @name            PopHordes
 // @description     Aspire les infos IG quand une PopUp s'affiche
-// @match           http://www.hordes.fr/*
-// @match           http://www.die2nite.com/*
-// @match           http://www.zombinoia.com/*
-// @match           http://www.dieverdammten.de/*
+// @match           http*://www.hordes.fr/*
+// @match           http*://www.die2nite.com/*
+// @match           http*://www.zombinoia.com/*
+// @match           http*://www.dieverdammten.de/*
 // @icon            https://myhordes.eu/build/images/pictos/r_gsp.3b617d93.gif
 // @version         3.6
 // @updateURL       https://github.com/Croaaa/PopHordes/raw/master/PopHordes.user.js
@@ -46,7 +46,7 @@ const heroJobs= ['item_tamed_pet.gif', 'item_tamed_pet_drug.gif', 'item_tamed_pe
 // Chien, Chien drogué, Chien off, Capuche on, Capuche off, Fouineur, Technicien, Gardien, Ermite.
 
 
-function sel(a,b) { // No problem with this function, I just use it in the one that causes problems.
+function sel(a,b) {
     let c= b||document, d= /^(?:#([\w-]+)|\.([\w-]+))$/.test(a), e= 0;
     if(d&&a[0]===".") {
         return c.getElementsByClassName(a.slice(1))[0];
