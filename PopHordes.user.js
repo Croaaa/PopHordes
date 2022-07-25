@@ -6,7 +6,7 @@
 // @match           http*://www.zombinoia.com/*
 // @match           http*://www.dieverdammten.de/*
 // @icon            https://myhordes.eu/build/images/pictos/r_gsp.3b617d93.gif
-// @version         3.6
+// @version         3.7
 // @updateURL       https://github.com/Croaaa/PopHordes/raw/master/PopHordes.user.js
 // @downloadURL     https://github.com/Croaaa/PopHordes/raw/master/PopHordes.user.js
 // @grant           unsafeWindow
@@ -15,7 +15,7 @@
 var id=false,
     data=false,
     next=false,
-    version= 3.6,
+    version= 3.7,
     dataStatus= "",
     town= {x:0,y:0},
     coord= {x:0,y:0},
@@ -39,7 +39,7 @@ class unserializeur{constructor(t){this.buffer=t,this.length=t.length,this.cache
 const allStatus= ["status_hasEaten", "status_hasDrunk", "status_thirst", "status_dehyd", "status_drunk", "status_hung_over", "status_clean", "status_drugged", "status_addict", "small_ghoul", "status_wound", "status_healed", "status_infect", "item_disinfect", "status_tired", "status_terror", "small_camp", "item_shield_mt", "item_shaman", "item_guide"];
 // Rassasié, Désaltéré, Soif, Déshydraté, Ivre, Gueule de bois, Clean, Drogué, Dépendant, Goule, Blessé, Soigné, Infecté, Immunisé, Fatigué, Terrorisé, Campeur Avisé, Vaincre la mort, Chaman, Guide.
 
-const banItems= ['item_reveil.gif', 'item_reveil_off.gif', 'item_photo_off.gif', 'item_photo_1.gif', 'item_photo_2.gif', 'item_photo_3.gif', 'item_basic_suit_dirt.gif', 'item_basic_suit.gif', 'small_empty_inv.gif','small_more2.gif'];
+const banItems= ['item_reveil.gif', 'item_reveil_off.gif', 'item_photo_off.gif', 'item_photo_1.gif', 'item_photo_2.gif', 'item_photo_3.gif', 'item_basic_suit_dirt.gif', 'item_basic_suit.gif','small_more2.gif'];
 // Réveil Hurleur, Réveil Hurleur off, APAG off, APAG 1 charge, APAG 2 charges, APAG 3 charges, Habits sales, Habits normaux, Slot vide, +.
 
 const heroJobs= ['item_tamed_pet.gif', 'item_tamed_pet_drug.gif', 'item_tamed_pet_off.gif', 'item_vest_on.gif', 'item_vest_off.gif', 'item_pelle.gif', 'item_keymol.gif', 'item_shield.gif', 'item_surv_book.gif'];
@@ -114,6 +114,20 @@ function getBagItems() {
     return has;
 }
 
+function getHomeItems() {
+    var b= "";
+    let has= [];
+    document.querySelectorAll('.homeInv > li > a').forEach(a => {
+        if (a.className.includes('freeSlot')) { b= "small_empty_inv.gif" }
+        else { b= a.firstElementChild.src.split('/').reverse()[0].split('?')[0] }
+        if (a.className.includes('limited')) {
+            b= b.replace('.gif', '_broken.gif')
+        }
+        has.push(b)
+    });
+    return has.join('|');
+}
+
 function getGroundItems() {
     let ground= [];
     let outInv= document.querySelectorAll('.outInv > li > span');
@@ -163,6 +177,8 @@ function getPopupContent() {
         return "[DEPOT DESERT]";
     } else if(thelastURLFB.search('grabItem')>0 || oldlastURLFB.search('grabItem')>0) {
         return "[PRISE DESERT]";
+    } else if(thelastURLFB.startsWith('outside/go')) {
+        return "[DEPLACEMENT DESERT]";
     } else {
         let text= sel('#notificationText').textContent;
         text= text.replace(/[\s]/g, ' ');
@@ -203,7 +219,6 @@ function getRuin() {
     else return "N";
 }
 
-
 function getSearchedBuilding() {
     if (sel('.outSpot')) {
         if (sel('.outSpot h2')) {
@@ -236,20 +251,24 @@ async function init(when) {
     if(
         (when=="AFTER" && next==true)
         ||
-        ((notif.classList.contains("showNotif") && !notif.classList.contains("aspired"))
+        ( (notif.classList.contains("showNotif") && !notif.classList.contains("aspired") )
          ||
-         ((thelastURLFB.search('removeFromBag')>0 || thelastURLFB.search('grabItem')>0 || oldlastURLFB.search('removeFromBag')>0 || oldlastURLFB.search('grabItem')>0)
-          &&
-          (Math.abs(coord.x)+Math.abs(coord.y)!=0)
+         ( (thelastURLFB.search('removeFromBag')>0
+            || thelastURLFB.search('grabItem')>0
+            || thelastURLFB.startsWith('outside/go')
+            || oldlastURLFB.search('removeFromBag')>0
+            || oldlastURLFB.search('grabItem')>0
+            || oldlastURLFB.startsWith('outside/go')
+           )
+          && (Math.abs(coord.x)+Math.abs(coord.y)!=0)
          )
         )
     ) {
-
         if(notif.classList.contains("showNotif") && !notif.classList.contains("aspired")) {
             notif.classList += " aspired"
         }
 
-        if ((thelastURLFB.search('removeFromBag')>0 || thelastURLFB.search('grabItem')>0) && (Math.abs(coord.x)+Math.abs(coord.y)!=0)) {
+        if (((thelastURLFB.search('removeFromBag')>0 || thelastURLFB.search('grabItem')>0) && (Math.abs(coord.x)+Math.abs(coord.y)!=0)) || thelastURLFB.startsWith('outside/go')) {
             dataStatus = "BEFORE"
         }
         else if ((oldlastURLFB.search('removeFromBag')>0 || oldlastURLFB.search('grabItem')>0) && (Math.abs(coord.x)+Math.abs(coord.y)!=0)) {
@@ -294,6 +313,7 @@ async function init(when) {
             listStatus: getStatus(),
             listItem: getBagItems().concat(["","","","","","","","","","","",""]).slice(0,12),
             groundItem: getGroundItems(),
+            homeItem: getHomeItems(),
             keyStatus: (id?idAfter:idBefore),
             descStatus: dataStatus,
             scriptVersion: version,
@@ -337,7 +357,6 @@ function anonymised(event) {
     }
 }
 
-
 function popOptions() {
 
     var ghostpage = sel('#ghost_pages');
@@ -365,11 +384,9 @@ function popOptions() {
     }
 };
 
-
 function initMap() {
 
-	//if(!hasInitialised&&sel('#FlashMap')) {
-	if(sel('#FlashMap')) {
+	if(!hasInitialised && sel('#FlashMap')) {
 
         var d;
         var node = document.querySelector("#FlashMap");
@@ -392,7 +409,7 @@ function initMap() {
         coord.x= d._x-ville.x;
         coord.y= ville.y-d._y;
     }
-    //hasInitialised= true;
+    hasInitialised= true;
 }
 
 function urlToObj(a) {
@@ -413,7 +430,7 @@ function urlToObj(a) {
     js.XmlHttp.pophordesOnEnd= js.XmlHttp.onEnd;
     js.XmlHttp.onEnd= function() {
         thelastURLFB= this.urlForBack;
-        if(thelastURLFB&&thelastURLFB.startsWith('outside/go?')) {
+        if(thelastURLFB && thelastURLFB.startsWith('outside/go')) {
             let i= urlToObj(thelastURLFB.split('?')[1]);
             coord.x+= parseInt(i.x);
             coord.y-= parseInt(i.y);
