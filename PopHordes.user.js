@@ -6,7 +6,7 @@
 // @match           http*://www.zombinoia.com/*
 // @match           http*://www.dieverdammten.de/*
 // @icon            https://myhordes.eu/build/images/pictos/r_gsp.3b617d93.gif
-// @version         3.7
+// @version         3.8
 // @updateURL       https://github.com/Croaaa/PopHordes/raw/master/PopHordes.user.js
 // @downloadURL     https://github.com/Croaaa/PopHordes/raw/master/PopHordes.user.js
 // @grant           unsafeWindow
@@ -15,7 +15,8 @@
 var id=false,
     data=false,
     next=false,
-    version= 3.7,
+    idTemp=false,
+    version= 3.8,
     dataStatus= "",
     town= {x:0,y:0},
     coord= {x:0,y:0},
@@ -210,6 +211,12 @@ function getBless() {
     return a.getAttribute('onmouseover').split("'")[1].split(':')[1].trim();
 }
 
+function getScoutStatus() {
+    if (sel('#scoutStatus .scoutStatus > img')) return sel('#scoutStatus .scoutStatus > img').src.split('/').reverse()[0] ;
+    else if (sel('#scoutStatus .critical > img')) return sel('#scoutStatus .critical > img').src.split('/').reverse()[0] ;
+    else return "" ;
+}
+
 function getRuin() {
     if(sel('#FlashExplo')) {
         let r= sel('#FlashExplo').getAttribute('flashvars').slice(13);
@@ -280,8 +287,8 @@ async function init(when) {
             if(when=="AFTER") { next = false }
         }
 
-        if (dataStatus=="BEFORE") { var idBefore = makeId(10)}
-        if (dataStatus=="AFTER") { var idAfter = id}
+        if (dataStatus=="BEFORE") { id = makeId(10) ; idTemp = id }
+        if (dataStatus=="AFTER") { id = idTemp }
 
         if (localStorage.getItem('anonymisedData') == "checked") {var anonymisation = "Y"};
 
@@ -310,17 +317,17 @@ async function init(when) {
             inRuin: getRuin(),
             imBan: getBan(),
             blessType: getBless(),
+            scoutStatus: getScoutStatus(),
             listStatus: getStatus(),
             listItem: getBagItems().concat(["","","","","","","","","","","",""]).slice(0,12),
             groundItem: getGroundItems(),
             homeItem: getHomeItems(),
-            keyStatus: (id?idAfter:idBefore),
+            keyStatus: id,
             descStatus: dataStatus,
             scriptVersion: version,
             gameVersion: window.location.host
         };
 
-        id = idBefore;
         oldlastURLFB = thelastURLFB;
         console.log(aspire);
 
@@ -331,7 +338,7 @@ async function init(when) {
                 data: aspire
             })
         }))?.text()
-    }
+        }
 }
 
 function getParentNode(NodeName, target) {
